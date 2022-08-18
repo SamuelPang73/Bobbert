@@ -95,25 +95,6 @@ const AddProduct  = (props) => {
         const handleAddProduct = async () => {
             setLoading(true) ;
 
-            let temp = {...products} ;
-
-                temp[uuidv4()] = {
-                    name : name ,
-                    price : price,
-                    description : description,
-                    image : '',
-                    ordered : false
-                }
-
-                setProducts(temp) ;
-
-                setLoading(false) ;
-
-                handleClose() ;
-
-                window.location.reload() ;
-                setLoading(false) ;
-
             try {
                 const added = await client.add(
                     image.raw,
