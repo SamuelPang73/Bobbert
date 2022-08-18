@@ -98,7 +98,7 @@ const Orders = (props) => {
                     <ListItem key={id}>
                         <InfoDiv>
                             <ImgDiv>
-                                {<img src={order.image} />}
+                                {<img src={order.image} alt='no product'/>}
                             </ImgDiv>
                             <div>
                                 <NameDiv>

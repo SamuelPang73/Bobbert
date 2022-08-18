@@ -1,7 +1,6 @@
-import React,{ useEffect } from 'react' ;
+import React from 'react' ;
 
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types' ;
 
 import Routing from './Routes';
 

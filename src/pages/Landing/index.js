@@ -70,7 +70,7 @@ const Landing = () => {
     return (
         <LandingDiv>
             <LogoDiv>
-                <img src={LogoImage} />
+                <img src={LogoImage} alt='no logo'/>
             </LogoDiv>
             <TitleDiv>
                 Our Registry

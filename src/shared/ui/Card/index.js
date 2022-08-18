@@ -14,7 +14,7 @@ const Card  = (props) => {
     return (
         <CardDiv>
             <CardImage>
-                {imageUrl && <img src={imageUrl} />}
+                {imageUrl && <img src={imageUrl} alt='no product'/>}
             </CardImage>
             <Divider />
             <CardHeader>

@@ -4,8 +4,12 @@ import { useLocalStorage } from 'react-use' ;
 
 import styled from 'styled-components';
 
+import { connect } from 'react-redux' ;
+import PropTypes from 'prop-types' ;
+import { UploadProductImage } from '../../redux/actions/upload';
+
 import { v4 as uuidv4 } from 'uuid' ;
-import { create as ipfsHttpClient } from 'ipfs-http-client' ;
+// import { create as ipfsHttpClient } from 'ipfs-http-client' ;
 
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 
@@ -16,7 +20,7 @@ import {
     FormControlGroup,
 } from '../../shared/ui';
 
-import { ipfs_origin, ipfs_auth } from '../../constants';
+// import { ipfs_origin } from '../../constants';
 
 import {
     Dialog,
@@ -47,14 +51,15 @@ const useStyles = makeStyles(() => ({
 //     },
 // });
 
-const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0') ;
+// const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0') ;
 
 const AddProduct  = (props) => {
     const classes = useStyles() ;
 
     const {
         open,
-        handleClose
+        handleClose,
+        UploadProductImage
     } = props ;
 
     const [products, setProducts] = useLocalStorage('products', {}) ;
@@ -95,37 +100,27 @@ const AddProduct  = (props) => {
         const handleAddProduct = async () => {
             setLoading(true) ;
 
-            try {
-                const added = await client.add(
-                    image.raw,
-                    {
-                        progress: (prog) => console.log(`received: ${prog}`)
-                    }
-                )
-                const url = `${ipfs_origin}${added.path}`
-                    
-                let temp = {...products} ;
+            let temp = {...products} ;
 
-                temp[uuidv4()] = {
-                    name : name ,
-                    price : price,
-                    description : description,
-                    image : url,
-                    ordered : false
-                }
+            let new_id = uuidv4() ;
 
-                setProducts(temp) ;
+            let url = await UploadProductImage(new_id, image.raw) ;
 
-                setLoading(false) ;
-
-                handleClose() ;
-
-                window.location.reload() ;
-            } catch (error) {
-                setLoading(false) ;
-                
-                console.log('Error uploading file: ', error) ;
+            temp[new_id] = {
+                name : name ,
+                price : price,
+                description : description,
+                image : url,
+                ordered : false
             }
+
+            setProducts(temp) ;
+
+            setLoading(false) ;
+
+            handleClose() ;
+
+            window.location.reload() ;
         }
 
         return (
@@ -192,7 +187,7 @@ const AddProduct  = (props) => {
                             {
                                 image.preview ? (
                                     <SelectImageDiv>
-                                        <img src={image.preview} width ={'100%'} height={'100%'}  />
+                                        <img src={image.preview} width ={'100%'} height={'100%'}  alt='no product'/>
                                     </SelectImageDiv>
                                 ) : (
                                     <>
@@ -223,8 +218,16 @@ const AddProduct  = (props) => {
         </>
     )
 }
+AddProduct.propTypes = {
+    UploadProductImage : PropTypes.func.isRequired
+}
+const mapStateToProps = state => ({
 
-export default AddProduct ;
+})
+const mapDispatchToProps = {
+    UploadProductImage
+}
+export default connect(mapStateToProps, mapDispatchToProps)(AddProduct) ;
 
 const TitleDiv = styled.div`
     display : flex;

@@ -26,13 +26,13 @@ const Input = (props) => {
         >
             {
                 startIcon && <StartIconDiv>
-                    <img src={startIcon} />
+                    <img src={startIcon} alt='no icon'/>
                 </StartIconDiv>
             }
             {
                 endAdornment && <EndAdornmentDiv>
                     {
-                        endAdornment.icon && <img src={endAdornment.icon} onClick={endAdornment.onClick}/>
+                        endAdornment.icon && <img src={endAdornment.icon} onClick={endAdornment.onClick} alt='no icon'/>
                     }
                     {
                         endAdornment.text

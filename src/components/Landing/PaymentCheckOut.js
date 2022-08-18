@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import Loading from 'react-loading-components' ;
 
 import {
-    Elements,
     PaymentElement,
     useStripe,
     useElements
@@ -13,7 +12,7 @@ import {
     Box,
 } from '@mui/material' ;
 
-import { useTheme, makeStyles } from "@mui/styles";
+import { makeStyles } from "@mui/styles";
 
 // Montserrat
 export const useStyles = makeStyles((theme) => ({
@@ -34,8 +33,6 @@ export const useStyles = makeStyles((theme) => ({
             color : 'white',
 
             display : 'flex', justifyContent : 'center', alignItems : 'center', gap : 10,
-            minWidth : 150,
-            fontSize : 15
         },
         "& button:disabled" : {
             color : 'gray',
@@ -47,12 +44,10 @@ export const useStyles = makeStyles((theme) => ({
 const PaymentCheckOut = (props) => {
     const stripe = useStripe();
     const elements = useElements();
-    const theme = useTheme() ;
     const classes = useStyles() ;
     
     const  {
         clientSecret,
-        id
     }  = props ;
 
     const [message, setMessage] = useState(null);
