@@ -1,8 +1,11 @@
 import * as React from 'react' ;
 import styled from 'styled-components';
 
+import { Divider } from '@mui/material';
+
 const Card  = (props) => {
     const {
+        imageUrl,
         header,
         content,
         footer
@@ -11,8 +14,9 @@ const Card  = (props) => {
     return (
         <CardDiv>
             <CardImage>
-
+                {imageUrl && <img src={imageUrl} />}
             </CardImage>
+            <Divider />
             <CardHeader>
                 {header}
             </CardHeader>
@@ -43,8 +47,18 @@ const CardDiv = styled.div`
     justify-content : space-between ;
 `
 const CardImage = styled.div`
-    background : #835959 ;
     height : 50%;
+
+    display : flex ;
+    justify-content : center ;
+    align-items : center ;
+
+    overflow : hidden ;
+
+    & img {
+        max-width : 100%;
+        max-height : 100%;
+    }
 `
 const CardHeader = styled.div`
     padding : 0px 30px 0px 30px;

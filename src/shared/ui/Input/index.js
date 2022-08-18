@@ -12,13 +12,17 @@ const Input = (props) => {
         type,
         width
     } = props ;
-    
+
+    const [default_value, setDefaultValue] = React.useState('') ;
+
     React.useEffect(() => {
     }, [value]) ; 
 
     return (
         <InputDiv
             style={{width : width}}
+            value={value || default_value}
+            onChange={onChange || setDefaultValue}
         >
             {
                 startIcon && <StartIconDiv>

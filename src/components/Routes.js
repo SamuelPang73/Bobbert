@@ -7,6 +7,7 @@ import Landing from "../pages/Landing";
 const Routing = () => {
     return (
         <Routes>
+            <Route path="/*" element={< Landing />} />
             <Route path="/dashboard" element={< Landing />} />
         </Routes>
     );

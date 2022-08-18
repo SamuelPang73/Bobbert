@@ -81,6 +81,8 @@ export const CoupleDiv = styled.div`
 export const SearchDiv = styled.div`
     padding-top : 30px ;
     width : 100%;
+
+    margin-bottom : 30px;
 `
 export const NumberBadge = styled.span`
     border : 2px solid green ;
@@ -99,7 +101,6 @@ export const NumberBadge = styled.span`
 `
 
 export const CardListDiv = styled.div`
-    margin-top : 30px;
 
     display : flex ;
     justify-content : space-between ;
