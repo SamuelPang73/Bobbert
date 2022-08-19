@@ -1,6 +1,8 @@
 import * as React from 'react' ;
 
-import { useLocalStorage } from 'react-use';
+import {connect} from 'react-redux' ;
+import PropTypes from 'prop-types' ;
+import { OrdersList, ProductsList , DeleteOrder} from '../../redux/actions/products';
 
 import styled from 'styled-components';
 
@@ -9,20 +11,21 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import swal from 'sweetalert' ;
 import { Button } from '../../shared/ui';
 
-import { createPaymentIntent } from '../../stripe/payment_api';
 import PaymentModal from './PaymentModal';
 
 const Orders = (props) => {
 
     const {
-        searchStr
+        searchStr,
+
+        OrdersList,
+        ProductsList,
+        DeleteOrder,
+
+        ordersList,
     } = props ;
 
-    const [orders, setOrders] = useLocalStorage("orders", {raw : true}) ;
-    const [products, setProducts] = useLocalStorage('products', {raw:true}) ;
-
-    const [clientSecret, setClientSecret] = React.useState(false) ;
-    const [paymentId, setPaymentId] = React.useState(false) ;
+    const [productInfo, setProductInfo] = React.useState(null) ;
     
     const [open, setOpen] = React.useState(false) ;
 
@@ -40,62 +43,31 @@ const Orders = (props) => {
             ],
             icon : 'info'
         })) { 
-            let temp  = {...orders} ;
+            await DeleteOrder(id) ;
 
-            delete temp[id] ;
-    
-            setOrders(temp) ;
-
-            temp = {...products} ;
-
-            temp[id] = {...temp[id] , ordered : false}
-
-            setProducts(temp);
-    
-            window.location.reload() ;
+            ProductsList() ;
+            OrdersList() ;
         }
     }
 
-    const handlePayWithCard = async (payAmount, id) => {
-        let temp = {...orders} ;
+    const handlePayWithCard = async (order) => {
+        await DeleteOrder(order.id) ;
 
-        delete temp[id] ;
+        await ProductsList() ;
+        await OrdersList() ;
 
-        setOrders(temp) ;
-
-        temp = {...products} ;
-
-        temp[id] = {...products[id], ordered : false} ;
-
-        setProducts(temp) ;
-
-        let data = {
-            "amount" : Number(Number(payAmount) * 100).toFixed(),
-            "currency"  : 'usd',
-            "payment_method_types[]" : 'card',
-            "metadata[created_at]" : new Date().getTime() ,
-        } ;
-        
-        let res = await createPaymentIntent(data) ;
-
-        if(res) {
-            setClientSecret(res.client_secret) ;
-            setPaymentId(res.id) ;
-            
-            setOpen(true) ;
-
-            return ;
-        }
+        setProductInfo(order) ;
+        setOpen(true) ;
     }
 
     return (
         <List>
             {
-                Object.entries(orders).filter(([id, order]) => 
+                ordersList.filter(order => 
                     order.name?.toLowerCase().search(searchStr?.toLowerCase()) >= 0 ||
                     order.description?.toLowerCase().search(searchStr?.toLowerCase()) >= 0
-                ).map(([id, order]) => (
-                    <ListItem key={id}>
+                ).map(order => (
+                    <ListItem key={order.id}>
                         <InfoDiv>
                             <ImgDiv>
                                 {<img src={order.image} alt='no product'/>}
@@ -115,14 +87,14 @@ const Orders = (props) => {
                                 ${order.price}
                             </PriceDiv>
                             <Button
-                                onClick={() => handlePayWithCard(order.price, id)}
+                                onClick={() => handlePayWithCard(order)}
                             >
                                 Buy
                             </Button>
                         </EndDiv>
                         <CloseIconDiv>
                             <CancelIcon 
-                                onClick={() => handleDeleteOrder(id)}
+                                onClick={() => handleDeleteOrder(order.id)}
                             />
                         </CloseIconDiv>
                     </ListItem>
@@ -131,14 +103,25 @@ const Orders = (props) => {
             <PaymentModal 
                 open={open}
                 handleClose={handleClose}
-                clientSecret={clientSecret}
-                paymentId={paymentId}
+                productInfo={productInfo}
             />
         </List>
     )
 }
-
-export default Orders ;
+Orders.propTypes = {
+    OrdersList : PropTypes.func.isRequired,
+    ProductsList: PropTypes.func.isRequired,
+    DeleteOrder : PropTypes.func.isRequired
+}
+const mapDispatchToProps = {
+    OrdersList,
+    ProductsList,
+    DeleteOrder
+}
+const mapStateToProps = state => ({
+    ordersList : state.products.ordersList,
+})
+export default connect(mapStateToProps, mapDispatchToProps)(Orders) ;
 
 const List = styled.div`
    width : 100% ;

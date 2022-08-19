@@ -1,5 +1,9 @@
 import * as React from 'react' ;
 
+import { connect } from 'react-redux' ;
+import PropTypes from 'prop-types' ;
+import { ProductsList , AddOrder, OrdersList} from '../../redux/actions/products';
+
 import LogoImage from '../../assets/landing/logo.png' ;
 
 import { useMediaQuery } from '@mui/material';
@@ -12,8 +16,6 @@ import Button from '../../shared/ui/Button';
 import Card from '../../shared/ui/Card';
 
 import Orders from '../../components/Landing/Orders';
-
-import { useLocalStorage } from 'react-use';
 
 import {
     LogoDiv,
@@ -29,16 +31,23 @@ import {
     NumberBadge
 } from './StyledDiv/index.styles' ;
 
-const Landing = () => {
+const Landing = (props) => {
+
+    const {
+        productsList,
+        ordersList,
+
+        ProductsList,
+        OrdersList,
+
+        AddOrder
+    } = props ;
 
     const match950 = useMediaQuery('(min-width : 950px)') ;
     const match475 = useMediaQuery('(min-width : 475px)') ;
     const [open, setOpen] = React.useState(false) ;
 
     const [pageId, setPageId] = React.useState('product_list') ;
-
-    const [products, setProducts] = useLocalStorage('products', {raw : true}) ;
-    const [orders, setOrders] = useLocalStorage('orders', {}) ;
 
     const [searchStr, setSearchStr] = React.useState('') ;
 
@@ -50,22 +59,17 @@ const Landing = () => {
         setOpen(true) ;
     }
 
-    const handleAddOrder = (id) => {
-        console.log(id) ;
-        console.log(orders) ;
-
-        let temp = {...orders} ;
-
-        temp[id] ={...products[id]} ;
-
-        setOrders(temp) ;
+    const handleAddOrder = async (id) => {
+        await AddOrder(id) ;
         
-        temp = {...products} ;
-        temp[id] = {...products[id], ordered : true}
-        setProducts(temp) ;
-
-        window.location.reload() ;
+        ProductsList() ;
+        OrdersList() ;
     }
+
+    React.useEffect(() => {
+        ProductsList() ;
+        OrdersList() ;
+    }, []) ;
 
     return (
         <LandingDiv>
@@ -99,7 +103,7 @@ const Landing = () => {
                         <Button
                             onClick={() => setPageId('order_list')}
                         >
-                            CART &nbsp;<NumberBadge>{Object.keys(orders).length}</NumberBadge>
+                            CART &nbsp;<NumberBadge>{ordersList?.length}</NumberBadge>
                         </Button>
                         <br />
                         {
@@ -125,12 +129,12 @@ const Landing = () => {
                     searchStr={searchStr}
                 >
                     {
-                        Object.entries(products).filter(([id, product]) => 
+                        productsList.filter( product => 
                             product.name?.toLowerCase().search(searchStr?.toLowerCase()) >= 0 ||
                             product.description?.toLowerCase().search(searchStr?.toLowerCase()) >= 0 
-                        ).map(([id, product]) => (
+                        ).map( product => (
                             <Card 
-                                key={id}
+                                key={product.id}
                                 imageUrl={product.image}
                                 header={
                                     <CardHeader>{product.name}</CardHeader>
@@ -144,7 +148,7 @@ const Landing = () => {
                                 footer={   product.ordered ? <Button
                                         className={"disabled"}
                                     >Added</Button> : <Button
-                                        onClick={() => handleAddOrder(id)}
+                                        onClick={() => handleAddOrder(product.id)}
                                     >Add</Button>
                                 }
                             />
@@ -167,5 +171,18 @@ const Landing = () => {
         </LandingDiv>
     )
 }
-
-export default Landing ;
+Landing.propTypes = {
+    ProductsList : PropTypes.func.isRequired,
+    AddOrder : PropTypes.func.isRequired,
+    OrdersList : PropTypes.func.isRequired
+}
+const mapDispatchToProps = {
+    ProductsList,
+    AddOrder,
+    OrdersList
+}
+const mapStateToProps = state => ({
+    productsList : state.products.productsList,
+    ordersList : state.products.ordersList
+})
+export default connect(mapStateToProps, mapDispatchToProps)(Landing) ;
