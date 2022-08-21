@@ -20,6 +20,7 @@ export const LandingDiv = styled.div`
     align-items : center ;
 
     padding-top : 30px ;
+    padding-bottom : 30px ;
 
     background-image : url(${BackgroundImage}) ;
     background-attachment: fixed;
@@ -122,4 +123,44 @@ export const PriceDiv = styled.div`
     font-size : 30px;
     font-weight : bold ;
     color : #707070 ;
+`
+
+export const ButtonGroupDiv = styled.div`
+    display : flex ;
+    gap : 20px;
+    flex-wrap : wrap ;
+    justify-content : flex-end;
+    width : 100%;
+`
+
+export const  CloseIconDiv = styled.div`
+    position : absolute ;
+    top : 10px;
+    right : 10px;
+
+    background : white ;
+    border : 2px solid red ;
+
+    width : 30px;
+    height : 30px;
+
+    border-radius : 15px;
+
+    display : flex ;
+    justify-content : center;
+    align-items : center;
+
+    
+    & svg {
+        transition : 1s ;
+
+        color : red ;
+        font-size : 40px;
+
+        & :hover {
+            color : #f36666 ;
+        }
+    }
+
+    cursor : pointer ;
 `

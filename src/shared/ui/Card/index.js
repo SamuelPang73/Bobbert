@@ -23,9 +23,11 @@ const Card  = (props) => {
             <CardContent>
                 {content}
             </CardContent>
-            <CardFooter>
-                {footer}
-            </CardFooter>
+            {
+                footer && <CardFooter>
+                    {footer}
+                </CardFooter>
+            }
         </CardDiv>
     )
 }
@@ -45,6 +47,12 @@ const CardDiv = styled.div`
     display : flex ;
     flex-direction : column ;
     justify-content : space-between ;
+
+    border : 1px solid gray;
+
+    padding : 10px 0px 10px 0px;
+
+    position : relative ;
 `
 const CardImage = styled.div`
     height : 50%;
@@ -62,10 +70,13 @@ const CardImage = styled.div`
 `
 const CardHeader = styled.div`
     padding : 0px 30px 0px 30px;
+    text-align : center;
 `
 const CardContent = styled.div`
     padding : 0px 30px 0px 30px;
+    text-align : center;
 `
 const CardFooter = styled.div`
     padding : 0px 30px 30px 30px ;
+    text-align : center;
 `

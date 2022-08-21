@@ -12,6 +12,9 @@ import swal from 'sweetalert' ;
 import { Button } from '../../shared/ui';
 
 import PaymentModal from './PaymentModal';
+import { useLocalStorage } from 'react-use';
+
+import SearchOffIcon from '@mui/icons-material/SearchOff';
 
 const Orders = (props) => {
 
@@ -26,6 +29,7 @@ const Orders = (props) => {
     } = props ;
 
     const [productInfo, setProductInfo] = React.useState(null) ;
+    const [products_of_custom, setCustomProducts] = useLocalStorage('products', {raw : false}) ;
     
     const [open, setOpen] = React.useState(false) ;
 
@@ -33,7 +37,7 @@ const Orders = (props) => {
         setOpen(false) ;
     }
 
-    const handleDeleteOrder = async (id) => {
+    const handleDeleteOrder = async (id, method=null) => {
         if(await swal({
             title : 'Confirm',
             text : 'Are you sure that you want to delete this order?',
@@ -43,20 +47,53 @@ const Orders = (props) => {
             ],
             icon : 'info'
         })) { 
-            await DeleteOrder(id) ;
+            if(method) {
+                await DeleteOrder(id) ;
 
-            ProductsList() ;
-            OrdersList() ;
+                ProductsList() ;
+                OrdersList() ;
+            } else {
+                let temp = {...products_of_custom} ;
+
+                temp[id] = {
+                    ...temp[id],
+                    ordered :false
+                }
+
+                setCustomProducts(temp) ;
+
+                window.location.reload() ;
+            }
         }
     }
 
-    const handlePayWithCard = async (order) => {
-        await DeleteOrder(order.id) ;
+    const handlePayWithCard = async (order, method=null) => {
+        if(method) {
+            await DeleteOrder(order.id) ;
 
-        await ProductsList() ;
-        await OrdersList() ;
+            await ProductsList() ;
+            await OrdersList() ;
+            setProductInfo({
+                ...order,
+                type : 'cloud'
+            }) ;
 
-        setProductInfo(order) ;
+        } else {
+            let temp = {...products_of_custom} ;
+
+            temp[order.id] = {
+                ...temp[order.id],
+                ordered : false 
+            }
+
+            setCustomProducts({...temp}) ;
+            
+            setProductInfo({
+                ...order,
+                type : 'custom',
+            }) ;
+        }
+
         setOpen(true) ;
     }
 
@@ -87,18 +124,71 @@ const Orders = (props) => {
                                 ${order.price}
                             </PriceDiv>
                             <Button
-                                onClick={() => handlePayWithCard(order)}
+                                onClick={() => handlePayWithCard(order, true)}
                             >
                                 Buy
                             </Button>
                         </EndDiv>
                         <CloseIconDiv>
                             <CancelIcon 
-                                onClick={() => handleDeleteOrder(order.id)}
+                                onClick={() => handleDeleteOrder(order.id, true)}
                             />
                         </CloseIconDiv>
                     </ListItem>
                 ))
+            }
+            {
+                Object.entries(products_of_custom).filter(([id, product]) =>
+                    product.ordered === true
+                ).filter(([id, product]) => 
+                    product.name?.toLowerCase().search(searchStr?.toLowerCase()) >= 0 ||
+                    product.description?.toLowerCase().search(searchStr?.toLowerCase()) >= 0 
+                ).map(([id, order]) => (
+                    <ListItem key={id}>
+                        <InfoDiv>
+                            <ImgDiv>
+                                {<img src={order.image} alt='no product'/>}
+                            </ImgDiv>
+                            <div>
+                                <NameDiv>
+                                    {order.name}
+                                </NameDiv>
+                                <DescriptionDiv>
+                                    {order.description}
+                                </DescriptionDiv>
+                            </div>
+                        </InfoDiv>
+                        
+                        <EndDiv>
+                            <PriceDiv>
+                                ${order.price}
+                            </PriceDiv>
+                            <Button
+                                onClick={() => handlePayWithCard({
+                                    ...order,
+                                    id : id
+                                })}
+                            >
+                                Buy
+                            </Button>
+                        </EndDiv>
+                        <CloseIconDiv>
+                            <CancelIcon 
+                                onClick={() => handleDeleteOrder(id)}
+                            />
+                        </CloseIconDiv>
+                    </ListItem>
+                ))
+            }
+            {
+                !ordersList.length && !Object.entries(products_of_custom).filter(([id, product]) =>
+                    product.ordered === true
+                ).length && <EmptyDiv>
+                    <SearchOffIcon />
+                    <div>
+                        Cart is empty.
+                    </div>
+                </EmptyDiv>
             }
             <PaymentModal 
                 open={open}
@@ -227,5 +317,26 @@ const CloseIconDiv = styled.div`
         &:hover {
             color : red ;
         }
+    }
+`
+
+const EmptyDiv = styled.div`
+    background : white ;
+    width : 100%;
+    padding : 10px 20px 10px 25px;
+    border-radius : 20px;
+
+    height : 100px;
+
+    font-size : 25px;
+    font-weight : bold ;
+
+    display : flex ;
+    justify-content : center ;
+    align-items : center ;
+    flex-direction : column ;
+
+    & svg {
+        font-size : 40px;
     }
 `

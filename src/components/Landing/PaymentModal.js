@@ -26,6 +26,7 @@ import Loading from 'react-loading-components' ;
 import { createPaymentIntent } from '../../stripe/payment_api';
 
 import { makeStyles } from '@mui/styles';
+import Card from '../../shared/ui/Card';
 
 const useStyles = makeStyles(() => ({
     paper: {
@@ -43,7 +44,9 @@ const PaymentModal = (props) => {
     const {
         open, 
         handleClose,
-        productInfo
+        productInfo,
+        totalAmount,
+        totalProduct
     } = props ;
 
     const [clientSecret, setClientSecret] = React.useState(false) ;
@@ -75,14 +78,33 @@ const PaymentModal = (props) => {
     const handlePay = async () => {
         setLoading(true) ;
 
-        let data = {
-            "amount" : Number(productInfo.price * 100).toFixed(),
-            "currency"  : 'usd',
-            "payment_method_types[]" : 'card',
-            "metadata[created_at]" : new Date().getTime() ,
-            "metadata[full_name]" : full_name,
-            "metadata[message]" : message
-        } ;
+        let data ;
+
+        if(productInfo) {
+            data = {
+                "amount" : Number(productInfo.price * 100).toFixed(),
+                "currency"  : 'usd',
+                "payment_method_types[]" : 'card',
+                "metadata[created_at]" : new Date().getTime() ,
+                "metadata[full_name]" : full_name,
+                "metadata[message]" : message,
+                "metadata[type]" : productInfo.type,
+                "metadata[product_name]" : productInfo.name,
+                "metadata[product_description]" : productInfo.description,
+                "metadata[product_price]" : productInfo.price,
+            } ;
+        } else {
+            data = {
+                "amount" : Number(totalAmount * 100).toFixed(),
+                "currency"  : 'usd',
+                "payment_method_types[]" : 'card',
+                "metadata[created_at]" : new Date().getTime() ,
+                "metadata[full_name]" : full_name,
+                "metadata[message]" : message,
+                "metadata[type]" : 'total payment',
+                "metadata[products]" : totalProduct
+            } ;
+        }
         
         let res = await createPaymentIntent(data) ;
 
@@ -106,7 +128,13 @@ const PaymentModal = (props) => {
                 hideBackdrop={false}
             >
                 <DialogTitle>
-                    You can pay with your debit card.
+                    {
+                        productInfo ? <>
+                            Complete Purchase : {productInfo?.price} - {productInfo?.description}
+                        </> : <>
+                            Totally : $ {totalAmount}
+                        </>
+                    }
                 </DialogTitle>
                 <Divider />
                 <DialogContent>
@@ -116,6 +144,26 @@ const PaymentModal = (props) => {
                             id={paymentId}
                         />
                     </Elements> : <BuyerInfoDiv>
+                        {
+                            productInfo && <>
+                                <ProductInfoDiv
+                                >
+                                    <Card
+                                        imageUrl={productInfo?.image}
+                                        header={
+                                            <CardHeader>{productInfo?.name}</CardHeader>
+                                        }
+                                        content={
+                                            <>
+                                                <CardLabel>{productInfo?.description}</CardLabel>
+                                                <PriceDiv>${productInfo?.price}</PriceDiv>
+                                            </>
+                                        }
+                                    />
+                                </ProductInfoDiv>
+                                <Divider />
+                            </>
+                        }
                         <FormControlGroup>
                             <InputLabel>Full Name</InputLabel>
                             <TextField 
@@ -164,4 +212,28 @@ const BuyerInfoDiv = styled.div`
     display : flex ;
     flex-direction : column ;
     gap : 15px;
+`
+
+const ProductInfoDiv = styled.div`
+    display : flex;
+    justify-content : center;
+
+    & > div {
+        width : 100% ;
+        font-size : 25px;
+    }
+`
+
+const CardHeader = styled.div`
+    color : #A5A5A5 ;
+`
+const CardLabel = styled.div`
+    color : #707070 ;
+    font-size : 23px;
+`
+
+const PriceDiv = styled.div`
+    font-size : 30px;
+    font-weight : bold ;
+    color : #707070 ;
 `

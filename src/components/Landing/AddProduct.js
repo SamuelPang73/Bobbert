@@ -1,5 +1,7 @@
 import * as React from 'react' ;
 
+import { useLocalStorage } from 'react-use' ;
+
 import styled from 'styled-components';
 
 import { connect } from 'react-redux' ;
@@ -33,22 +35,27 @@ import { makeStyles } from '@mui/styles';
 const useStyles = makeStyles(() => ({
     paper: {
         backgroundColor : 'white !important',
-        border : '1px solid ',
+        border : props => props.method ? '1px solid black' : '5px solid green',
         borderRadius : '10px !important',
     }
 })) ;
 
 const AddProduct  = (props) => {
-    const classes = useStyles() ;
 
     const {
         open,
         handleClose,
 
+        method,
+
         UploadProductImage,
         UploadProduct,
         ProductsList
     } = props ;
+
+    const classes = useStyles({
+        method : method
+    }) ;
 
     const [name, setName] = React.useState('') ;
     const [description, setDescription] = React.useState('') ;
@@ -57,6 +64,8 @@ const AddProduct  = (props) => {
         preview : '',
         raw : ""
     }) ;
+    
+    const [products_of_custom, setCustomProducts] = useLocalStorage('products', {raw: false}) ;
 
     const [loading, setLoading] = React.useState(false) ;
     
@@ -67,11 +76,21 @@ const AddProduct  = (props) => {
         }) ;
     }
     
+    const initialState = () => {
+        setName('') ;
+        setPrice('');
+        setDescription('') ;
+        setImage({
+            preview : "",
+            raw : ""
+        }) ;
+    } 
+
     const Title = () => {
         return (
             <TitleDiv>
                 <LabelDiv>
-                    Add Product
+                    Add Product{`${method ? '' : ' ( Custom ) '}`}
                 </LabelDiv>
                 <CloseIconDiv
                     onClick={handleClose}
@@ -102,21 +121,45 @@ const AddProduct  = (props) => {
 
             setLoading(false) ;
 
-            setName('') ;
-            setPrice('');
-            setDescription('') ;
-            setImage({
-                preview : "",
-                raw : ""
-            }) ;
+            initialState() ;
             
             handleClose();
+        }
+
+        const handleAddCustom = async () => {
+            setLoading(true) ;
+
+            let image_id  = uuidv4() ;
+
+            let url = await UploadProductImage(image_id, image.raw) ;
+
+            let new_id = uuidv4() ;
+
+            let temp = {...products_of_custom} ;
+
+            temp[new_id] = {
+                name : name,
+                price : Number(price),
+                description : description,
+                image : url,
+                ordered : true
+            } ;
+
+            setCustomProducts({...temp}) ;
+
+            setLoading(false) ;
+
+            initialState() ;
+            
+            handleClose();
+
+            window.location.reload() ;
         }
 
         return (
             <>
                 <Button
-                    onClick={handleAddProduct}
+                    onClick={method ? handleAddProduct : handleAddCustom}
                     className={loading ? 'disabled' : ''}
                 >
                     {loading && <><Loading type='oval' width={20} height={20} fill={'#707070'} />&nbsp;&nbsp;</>}
@@ -135,7 +178,7 @@ const AddProduct  = (props) => {
                 classes ={{
                     paper : classes.paper
                 }}
-                hideBackdrop={true}
+                hideBackdrop={false}
             >
                 <DialogTitle>
                     {<Title/>}
