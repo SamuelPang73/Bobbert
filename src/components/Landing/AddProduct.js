@@ -48,9 +48,13 @@ const AddProduct  = (props) => {
 
         method,
 
+        products_of_custom,
+        setCustomProducts,
+
         UploadProductImage,
         UploadProduct,
-        ProductsList
+        ProductsList,
+        setPageId
     } = props ;
 
     const classes = useStyles({
@@ -64,9 +68,6 @@ const AddProduct  = (props) => {
         preview : '',
         raw : ""
     }) ;
-    
-    const [products_of_custom, setCustomProducts] = useLocalStorage('products', {raw: false}) ;
-
     const [loading, setLoading] = React.useState(false) ;
     
     const handleChangeImage = (e) => {
@@ -153,7 +154,7 @@ const AddProduct  = (props) => {
             
             handleClose();
 
-            window.location.reload() ;
+            setPageId('order_list') ;
         }
 
         return (

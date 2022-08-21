@@ -322,6 +322,9 @@ const Landing = (props) => {
                 open={open}
                 handleClose={handleClose}
                 method={method}
+                setPageId={setPageId}
+                products_of_custom={products_of_custom}
+                setCustomProducts={setCustomProducts}
             />
 
             <PaymentConfirm 
